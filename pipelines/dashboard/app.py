@@ -1,6 +1,8 @@
-﻿import pandas as pd
+﻿from pathlib import Path
+
+import altair as alt
+import pandas as pd
 import streamlit as st
-from pathlib import Path
 
 st.set_page_config(page_title="Dashboard Servicio al Usuario", layout="wide")
 
@@ -97,7 +99,17 @@ if not monthly.empty:
         .sort_values("year")
     )
     st.subheader("Tendencia anual de reclamos")
-    st.line_chart(yearly.set_index("year")["total"])
+    yearly["year_str"] = yearly["year"].astype(int).astype(str)
+    chart_year = (
+        alt.Chart(yearly)
+        .mark_line(point=True)
+        .encode(
+            x=alt.X("year_str:O", title="Año"),
+            y=alt.Y("total:Q", title="Reclamos"),
+            tooltip=["year_str", "total"],
+        )
+    )
+    st.altair_chart(chart_year, use_container_width=True)
 
     ts = (
         monthly.groupby("month_start", dropna=True)
