@@ -20,7 +20,7 @@ df["month"] = df["month"].fillna(0).astype(int)
 # Filters
 st.sidebar.header("Filtros")
 
-is_lifetime = st.sidebar.checkbox("Ver Lifetime", value=True)
+is_lifetime = st.sidebar.checkbox("Ver Lifetime", value=False)
 
 if is_lifetime:
     data = df[df["is_lifetime"] == 1].copy()
