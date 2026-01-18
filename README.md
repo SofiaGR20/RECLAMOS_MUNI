@@ -9,8 +9,8 @@ Este repositorio corresponde al trabajo final del curso de Gestion y Gobierno de
 
 Se trabajara con los siguientes archivos ubicados en la capa Bronze:
 
-- `C:\Users\Sofia\Desktop\evaluacion_final\data\bronze\oficinas.csv`
-- `C:\Users\Sofia\Desktop\evaluacion_final\data\bronze\solicitudes_ciudadanas.csv`
+- `C:\Users\Desktop\evaluacion_final\data\bronze\oficinas.csv`
+- `C:\Users\Desktop\evaluacion_final\data\bronze\solicitudes_ciudadanas.csv`
 
 ## Estructura del repositorio (esperada)
 
