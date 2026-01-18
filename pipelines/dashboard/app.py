@@ -27,14 +27,8 @@ else:
 
 if not is_lifetime:
     years = sorted(data["year"].dropna().unique())
-    years_sel = st.sidebar.multiselect(
-        "Año",
-        options=years,
-        default=years,
-        format_func=lambda v: f"{v:d}",
-    )
-    if years_sel:
-        data = data[data["year"].isin(years_sel)]
+    year = st.sidebar.selectbox("Año", options=years, format_func=lambda v: f"{v:d}")
+    data = data[data["year"] == year]
 
     months = sorted(data["month"].dropna().unique())
     month_names = {
@@ -51,14 +45,12 @@ if not is_lifetime:
         11: "Noviembre",
         12: "Diciembre",
     }
-    months_sel = st.sidebar.multiselect(
+    month = st.sidebar.selectbox(
         "Mes",
         options=months,
-        default=months,
         format_func=lambda v: month_names.get(int(v), "Desconocido"),
     )
-    if months_sel:
-        data = data[data["month"].isin(months_sel)]
+    data = data[data["month"] == month]
 
 category = st.sidebar.multiselect("Categoría", sorted(data["category"].unique()))
 if category:
