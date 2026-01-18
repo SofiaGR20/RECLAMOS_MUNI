@@ -27,8 +27,14 @@ else:
 
 if not is_lifetime:
     years = sorted(data["year"].dropna().unique())
-    year = st.sidebar.selectbox("Año", options=years, format_func=lambda v: f"{v:d}")
-    data = data[data["year"] == year]
+    years_sel = st.sidebar.multiselect(
+        "Año",
+        options=years,
+        default=years,
+        format_func=lambda v: f"{v:d}",
+    )
+    if years_sel:
+        data = data[data["year"].isin(years_sel)]
 
     months = sorted(data["month"].dropna().unique())
     month_names = {
@@ -45,12 +51,14 @@ if not is_lifetime:
         11: "Noviembre",
         12: "Diciembre",
     }
-    month = st.sidebar.selectbox(
+    months_sel = st.sidebar.multiselect(
         "Mes",
         options=months,
+        default=months,
         format_func=lambda v: month_names.get(int(v), "Desconocido"),
     )
-    data = data[data["month"] == month]
+    if months_sel:
+        data = data[data["month"].isin(months_sel)]
 
 category = st.sidebar.multiselect("Categoría", sorted(data["category"].unique()))
 if category:
@@ -65,6 +73,30 @@ if status:
     data = data[data["status"].isin(status)]
 
 st.title("Dashboard de Servicio al Usuario")
+
+# Line chart: monthly requests (based on monthly grain)
+monthly = df[df["is_lifetime"] == 0].copy()
+if not is_lifetime:
+    if years_sel:
+        monthly = monthly[monthly["year"].isin(years_sel)]
+    if months_sel:
+        monthly = monthly[monthly["month"].isin(months_sel)]
+if category:
+    monthly = monthly[monthly["category"].isin(category)]
+if channel:
+    monthly = monthly[monthly["channel"].isin(channel)]
+if status:
+    monthly = monthly[monthly["status"].isin(status)]
+
+if not monthly.empty:
+    ts = (
+        monthly.groupby("month_start", dropna=True)
+        .agg(total=("total_requests", "sum"))
+        .reset_index()
+        .sort_values("month_start")
+    )
+    st.subheader("Tendencia mensual de reclamos")
+    st.line_chart(ts.set_index("month_start")["total"])
 
 # KPI cards
 kpi_cols = st.columns(5)
@@ -89,4 +121,8 @@ canal = data.groupby("channel").agg(total=("total_requests", "sum"), sla=("sla_b
 st.bar_chart(canal.set_index("channel")["total"])
 
 st.subheader("Tabla resumen")
-st.dataframe(data.head(200))
+display_df = data.copy()
+if is_lifetime:
+    display_df["year"] = "Lifetime"
+    display_df["month"] = ""
+st.dataframe(display_df.head(200))
