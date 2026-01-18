@@ -1,0 +1,133 @@
+{
+  "solicitudes": {
+    "rows_raw": 522,
+    "rows_clean": 513,
+    "nulls_clean": {
+      "request_id": {
+        "nulls": 1,
+        "null_pct": 0.001949317738791423
+      },
+      "citizen_id": {
+        "nulls": 14,
+        "null_pct": 0.02729044834307992
+      },
+      "office_id": {
+        "nulls": 13,
+        "null_pct": 0.025341130604288498
+      },
+      "channel": {
+        "nulls": 2,
+        "null_pct": 0.003898635477582846
+      },
+      "request_type": {
+        "nulls": 3,
+        "null_pct": 0.005847953216374269
+      },
+      "category": {
+        "nulls": 4,
+        "null_pct": 0.007797270955165692
+      },
+      "subcategory": {
+        "nulls": 7,
+        "null_pct": 0.01364522417153996
+      },
+      "created_at": {
+        "nulls": 3,
+        "null_pct": 0.005847953216374269
+      },
+      "closed_at": {
+        "nulls": 8,
+        "null_pct": 0.015594541910331383
+      },
+      "status": {
+        "nulls": 1,
+        "null_pct": 0.001949317738791423
+      },
+      "priority": {
+        "nulls": 4,
+        "null_pct": 0.007797270955165692
+      },
+      "satisfaction_rating": {
+        "nulls": 39,
+        "null_pct": 0.07602339181286549
+      },
+      "resolution_hours": {
+        "nulls": 20,
+        "null_pct": 0.03898635477582846
+      },
+      "cost_soles": {
+        "nulls": 17,
+        "null_pct": 0.03313840155945419
+      },
+      "department": {
+        "nulls": 6,
+        "null_pct": 0.011695906432748537
+      },
+      "province": {
+        "nulls": 3,
+        "null_pct": 0.005847953216374269
+      },
+      "district": {
+        "nulls": 6,
+        "null_pct": 0.011695906432748537
+      },
+      "latitude": {
+        "nulls": 27,
+        "null_pct": 0.05263157894736842
+      },
+      "longitude": {
+        "nulls": 24,
+        "null_pct": 0.04678362573099415
+      },
+      "contact_email": {
+        "nulls": 25,
+        "null_pct": 0.04873294346978557
+      },
+      "contact_phone": {
+        "nulls": 25,
+        "null_pct": 0.04873294346978557
+      }
+    },
+    "duplicate_request_id_raw": 9,
+    "duplicate_request_id_clean": 0,
+    "invalid_date_order_raw": 15,
+    "rating_out_of_range_raw": 39,
+    "latitude_out_of_range_raw": 29,
+    "longitude_out_of_range_raw": 25,
+    "invalid_phone_raw": 25,
+    "invalid_email_raw": 25,
+    "outliers_clean": {
+      "resolution_hours": 9,
+      "cost_soles": 5,
+      "satisfaction_rating": 0
+    }
+  },
+  "oficinas": {
+    "rows_raw": 6,
+    "rows_clean": 6,
+    "nulls_clean": {
+      "office_id": {
+        "nulls": 0,
+        "null_pct": 0.0
+      },
+      "office_name": {
+        "nulls": 0,
+        "null_pct": 0.0
+      },
+      "categoria_principal": {
+        "nulls": 0,
+        "null_pct": 0.0
+      },
+      "telefono_contacto": {
+        "nulls": 1,
+        "null_pct": 0.16666666666666666
+      },
+      "email_contacto": {
+        "nulls": 1,
+        "null_pct": 0.16666666666666666
+      }
+    },
+    "duplicate_office_id_raw": 0,
+    "duplicate_office_id_clean": 0
+  }
+}

@@ -1,0 +1,7 @@
+office_id,office_name,categoria_principal,telefono_contacto,email_contacto
+OF-001,Gerencia de Transporte,transporte,+51-01-3340975,of-001@municipio.gob.pe
+OF-002,Direccion de Salud,salud,+51-01-2233478,of-002@municipio.gob.pe
+OF-003,Serenazgo,seguridad,+51-01-2052451,of-003@municipio.gob.pe
+OF-004,Tributos Municipales,tributos,+51-01-3555144,of-004@municipio.gob.pe
+OF-005,Servicios Publicos,servicios,+51-01-2576778,of-005@municipio.gob.pe
+OF-999,Unidad Fantasma,desconocida,999999,unidad@municipio
