@@ -1,91 +1,91 @@
 {
   "solicitudes": {
     "rows_raw": 522,
-    "rows_clean": 20,
+    "rows_clean": 478,
     "nulls_clean": {
       "request_id": {
         "nulls": 0,
         "null_pct": 0.0
       },
       "citizen_id": {
-        "nulls": 0,
-        "null_pct": 0.0
+        "nulls": 13,
+        "null_pct": 0.027196652719665274
       },
       "office_id": {
         "nulls": 0,
         "null_pct": 0.0
       },
       "channel": {
-        "nulls": 0,
-        "null_pct": 0.0
+        "nulls": 2,
+        "null_pct": 0.0041841004184100415
       },
       "request_type": {
-        "nulls": 0,
-        "null_pct": 0.0
+        "nulls": 3,
+        "null_pct": 0.006276150627615063
       },
       "category": {
         "nulls": 0,
         "null_pct": 0.0
       },
       "subcategory": {
-        "nulls": 0,
-        "null_pct": 0.0
+        "nulls": 5,
+        "null_pct": 0.010460251046025104
       },
       "created_at": {
         "nulls": 0,
         "null_pct": 0.0
       },
       "closed_at": {
-        "nulls": 5,
-        "null_pct": 0.25
+        "nulls": 7,
+        "null_pct": 0.014644351464435146
       },
       "status": {
         "nulls": 0,
         "null_pct": 0.0
       },
       "priority": {
-        "nulls": 0,
-        "null_pct": 0.0
+        "nulls": 4,
+        "null_pct": 0.008368200836820083
       },
       "satisfaction_rating": {
-        "nulls": 0,
-        "null_pct": 0.0
+        "nulls": 36,
+        "null_pct": 0.07531380753138076
       },
       "resolution_hours": {
-        "nulls": 6,
-        "null_pct": 0.3
+        "nulls": 8,
+        "null_pct": 0.016736401673640166
       },
       "cost_soles": {
-        "nulls": 0,
-        "null_pct": 0.0
+        "nulls": 16,
+        "null_pct": 0.03347280334728033
       },
       "department": {
-        "nulls": 0,
-        "null_pct": 0.0
+        "nulls": 6,
+        "null_pct": 0.012552301255230125
       },
       "province": {
-        "nulls": 0,
-        "null_pct": 0.0
+        "nulls": 3,
+        "null_pct": 0.006276150627615063
       },
       "district": {
-        "nulls": 0,
-        "null_pct": 0.0
+        "nulls": 6,
+        "null_pct": 0.012552301255230125
       },
       "latitude": {
-        "nulls": 0,
-        "null_pct": 0.0
+        "nulls": 26,
+        "null_pct": 0.05439330543933055
       },
       "longitude": {
-        "nulls": 0,
-        "null_pct": 0.0
+        "nulls": 23,
+        "null_pct": 0.04811715481171548
       },
       "contact_email": {
-        "nulls": 0,
-        "null_pct": 0.0
+        "nulls": 23,
+        "null_pct": 0.04811715481171548
       },
       "contact_phone": {
-        "nulls": 0,
-        "null_pct": 0.0
+        "nulls": 24,
+        "null_pct": 0.0502092050209205
       }
     },
     "duplicate_request_id_raw": 9,
@@ -97,8 +97,8 @@
     "invalid_phone_raw": 25,
     "invalid_email_raw": 25,
     "outliers_clean": {
-      "resolution_hours": 0,
-      "cost_soles": 0,
+      "resolution_hours": 9,
+      "cost_soles": 5,
       "satisfaction_rating": 0
     }
   },

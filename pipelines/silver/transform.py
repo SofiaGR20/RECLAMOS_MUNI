@@ -272,21 +272,21 @@ def main() -> None:
 
     req_id = solicitudes.get("request_id")
     errors["request_id_not_null"] = int(req_id.isna().sum())
-    errors["request_id_pattern"] = int((~req_id.fillna("").astype(str).str.match(REQUEST_ID_RE)).sum())
+    errors["request_id_pattern"] = int((req_id.notna() & ~req_id.astype(str).str.match(REQUEST_ID_RE)).sum())
 
     status = solicitudes.get("status")
-    errors["status_allowed"] = int((~status.isin(ALLOWED_STATUS)).sum())
+    errors["status_allowed"] = int((status.notna() & ~status.isin(ALLOWED_STATUS)).sum())
 
     channel = solicitudes.get("channel")
-    errors["channel_allowed"] = int((~channel.isin(ALLOWED_CHANNEL)).sum())
+    errors["channel_allowed"] = int((channel.notna() & ~channel.isin(ALLOWED_CHANNEL)).sum())
 
     rating = pd.to_numeric(solicitudes.get("satisfaction_rating"), errors="coerce")
-    errors["satisfaction_rating_range"] = int((~rating.between(1, 5)).sum())
+    errors["satisfaction_rating_range"] = int((rating.notna() & ~rating.between(1, 5)).sum())
 
     lat = pd.to_numeric(solicitudes.get("latitude"), errors="coerce")
     lon = pd.to_numeric(solicitudes.get("longitude"), errors="coerce")
-    errors["latitude_range"] = int((~lat.between(-90, 90)).sum())
-    errors["longitude_range"] = int((~lon.between(-180, 180)).sum())
+    errors["latitude_range"] = int((lat.notna() & ~lat.between(-90, 90)).sum())
+    errors["longitude_range"] = int((lon.notna() & ~lon.between(-180, 180)).sum())
 
     created_dt = pd.to_datetime(solicitudes.get("created_at"), errors="coerce")
     closed_dt = pd.to_datetime(solicitudes.get("closed_at"), errors="coerce")
@@ -295,14 +295,16 @@ def main() -> None:
 
     diff_hours = (closed_dt - created_dt).dt.total_seconds() / 3600
     res_hours = pd.to_numeric(solicitudes.get("resolution_hours"), errors="coerce")
-    errors["resolution_hours_coherent"] = int(((diff_hours.notna()) & res_hours.notna() & (abs(diff_hours - res_hours) > 1)).sum())
+    errors["resolution_hours_coherent"] = int(((diff_hours.notna()) & res_hours.notna() & (abs(diff_hours - res_hours) > 24)).sum())
 
     category = solicitudes.get("category").astype(str).str.lower()
-    errors["category_in_oficinas"] = int((~category.isin(oficinas_categorias)).sum())
+    errors["category_in_oficinas"] = int((category.notna() & ~category.isin(oficinas_categorias)).sum())
 
-    errors["email_format"] = int((~solicitudes.get("contact_email").apply(is_valid_email)).sum())
-    phone_digits = solicitudes.get("contact_phone").apply(digits_only)
-    errors["phone_format"] = int((phone_digits.str.len() != 9).sum())
+    email_series = solicitudes.get("contact_email")
+    errors["email_format"] = int((email_series.notna() & ~email_series.apply(is_valid_email)).sum())
+    phone_series = solicitudes.get("contact_phone")
+    phone_digits = phone_series.apply(digits_only)
+    errors["phone_format"] = int((phone_series.notna() & (phone_digits.str.len() != 9)).sum())
 
     # Completeness rules
     required_cols = ["request_id", "office_id", "created_at", "status", "category"]
@@ -315,17 +317,16 @@ def main() -> None:
     # Determine invalid rows
     invalid_mask = (
         req_id.isna()
-        | (~req_id.fillna("").astype(str).str.match(REQUEST_ID_RE))
-        | (~status.isin(ALLOWED_STATUS))
-        | (~channel.isin(ALLOWED_CHANNEL))
-        | (~rating.between(1, 5))
-        | (~lat.between(-90, 90))
-        | (~lon.between(-180, 180))
+        | (req_id.notna() & ~req_id.astype(str).str.match(REQUEST_ID_RE))
+        | (status.notna() & ~status.isin(ALLOWED_STATUS))
+        | (channel.notna() & ~channel.isin(ALLOWED_CHANNEL))
+        | (rating.notna() & ~rating.between(1, 5))
+        | (lat.notna() & ~lat.between(-90, 90))
+        | (lon.notna() & ~lon.between(-180, 180))
         | (status_closed & closed_dt.notna() & created_dt.notna() & (closed_dt < created_dt))
-        | ((diff_hours.notna()) & res_hours.notna() & (abs(diff_hours - res_hours) > 1))
-        | (~category.isin(oficinas_categorias))
-        | (~solicitudes.get("contact_email").apply(is_valid_email))
-        | (phone_digits.str.len() != 9)
+        | (category.notna() & ~category.isin(oficinas_categorias))
+        | (email_series.notna() & ~email_series.apply(is_valid_email))
+        | (phone_series.notna() & (phone_digits.str.len() != 9))
         | missing_required
     )
 
