@@ -74,7 +74,7 @@ if status:
 
 st.title("Dashboard de Servicio al Usuario")
 
-# Line chart: monthly requests (based on monthly grain)
+# Line charts: yearly then monthly requests
 monthly = df[df["is_lifetime"] == 0].copy()
 if not is_lifetime:
     if years_sel:
@@ -89,6 +89,15 @@ if status:
     monthly = monthly[monthly["status"].isin(status)]
 
 if not monthly.empty:
+    yearly = (
+        monthly.groupby("year", dropna=True)
+        .agg(total=("total_requests", "sum"))
+        .reset_index()
+        .sort_values("year")
+    )
+    st.subheader("Tendencia anual de reclamos")
+    st.line_chart(yearly.set_index("year")["total"])
+
     ts = (
         monthly.groupby("month_start", dropna=True)
         .agg(total=("total_requests", "sum"))
