@@ -66,49 +66,18 @@ if status:
 
 st.title("Dashboard de Servicio al Usuario")
 
-# KPI calculations (weighted where possible)
-total_requests = data["total_requests"].sum()
-closed_requests = data["closed_requests"].sum()
-open_requests = data["open_requests"].sum()
-sla_breach_count = data["sla_breach_count"].sum()
-closed_within_sla_count = data.get("closed_within_sla_count", pd.Series(dtype=float)).sum()
-high_satisfaction_count = data["high_satisfaction_count"].sum()
-high_priority_count = data["high_priority_count"].sum()
-total_cost_soles = data["total_cost_soles"].sum()
+# KPI cards
+kpi_cols = st.columns(5)
 
-closure_rate = (closed_requests / total_requests) if total_requests else 0
-sla_breach_rate = (sla_breach_count / total_requests) if total_requests else 0
-closed_within_sla_rate = (closed_within_sla_count / closed_requests) if closed_requests else 0
-high_satisfaction_rate = (high_satisfaction_count / total_requests) if total_requests else 0
-high_priority_rate = (high_priority_count / total_requests) if total_requests else 0
-backlog_rate = (open_requests / total_requests) if total_requests else 0
+def metric(col, label, fmt="{:.2f}"):
+    val = data[col].sum() if col in ["total_requests", "closed_requests", "open_requests", "sla_breach_count", "high_priority_count"] else data[col].mean()
+    kpi_cols.pop(0).metric(label, fmt.format(val) if isinstance(val, (int, float)) else val)
 
-avg_resolution_hours = data["avg_resolution_hours"].mean()
-median_resolution_hours = data["median_resolution_hours"].mean()
-p90_resolution_hours = data["p90_resolution_hours"].mean()
-avg_satisfaction = data["avg_satisfaction"].mean()
-avg_cost_soles = data["avg_cost_soles"].mean()
-
-# KPI cards (two rows)
-kpi_row1 = st.columns(5)
-kpi_row1[0].metric("Total solicitudes", f"{total_requests:.0f}")
-kpi_row1[1].metric("Tasa de cierre", f"{closure_rate:.2%}")
-kpi_row1[2].metric("Incumplimiento SLA", f"{sla_breach_rate:.2%}")
-kpi_row1[3].metric("Cerradas dentro de SLA", f"{closed_within_sla_rate:.2%}")
-kpi_row1[4].metric("Backlog rate", f"{backlog_rate:.2%}")
-
-kpi_row2 = st.columns(5)
-kpi_row2[0].metric("Tiempo medio (h)", f"{avg_resolution_hours:.2f}")
-kpi_row2[1].metric("Mediana (h)", f"{median_resolution_hours:.2f}")
-kpi_row2[2].metric("P90 (h)", f"{p90_resolution_hours:.2f}")
-kpi_row2[3].metric("Satisfacción promedio", f"{avg_satisfaction:.2f}")
-kpi_row2[4].metric("Alta satisfacción", f"{high_satisfaction_rate:.2%}")
-
-kpi_row3 = st.columns(4)
-kpi_row3[0].metric("Alta prioridad", f"{high_priority_rate:.2%}")
-kpi_row3[1].metric("Costo total (S/.)", f"{total_cost_soles:.2f}")
-kpi_row3[2].metric("Costo promedio (S/.)", f"{avg_cost_soles:.2f}")
-kpi_row3[3].metric("Casos abiertos", f"{open_requests:.0f}")
+metric("total_requests", "Total solicitudes", "{:.0f}")
+metric("closure_rate", "Tasa de cierre")
+metric("sla_breach_rate", "Incumplimiento SLA")
+metric("avg_resolution_hours", "Tiempo medio (h)")
+metric("avg_satisfaction", "Satisfacción promedio")
 
 # Charts
 st.subheader("Distribución por categoría")
