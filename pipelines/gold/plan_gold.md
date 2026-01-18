@@ -29,6 +29,7 @@ Además, filas **lifetime** (todo el histórico) con las mismas dimensiones y `i
 - Volumen: `total_requests`.
 - Cierre: `closed_requests`, `open_requests`, `closure_rate`.
 - SLA: `sla_breach_count`, `sla_breach_rate` (umbral 72h).
+- SLA en cerradas: `closed_within_sla_count`, `closed_within_sla_rate` (cerradas dentro de 72h).
 - Tiempo: `avg_resolution_hours`, `median_resolution_hours`, `p90_resolution_hours`.
 - Satisfacción: `avg_satisfaction`, `high_satisfaction_rate` (>=4).
 - Costos: `total_cost_soles`, `avg_cost_soles`.

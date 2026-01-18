@@ -7,6 +7,9 @@ import pandas as pd
 
 NULL_LIKE = {"", "NULL", "null", "NaN", "nan", "None", "none"}
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+REQUEST_ID_RE = re.compile(r"^REQ-\d{4}$")
+ALLOWED_STATUS = {"abierto", "en_proceso", "cerrado", "anulado"}
+ALLOWED_CHANNEL = {"web", "presencial", "callcenter", "app", "email"}
 
 
 def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -187,7 +190,7 @@ def clean_oficinas(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def clean_solicitudes(df: pd.DataFrame, oficinas_ids: set[str]) -> pd.DataFrame:
+def clean_solicitudes(df: pd.DataFrame, oficinas_ids: set[str], dedup: bool = True) -> pd.DataFrame:
     df = normalize_columns(df)
 
     for col in df.select_dtypes(include="object").columns:
@@ -240,10 +243,10 @@ def clean_solicitudes(df: pd.DataFrame, oficinas_ids: set[str]) -> pd.DataFrame:
     if "office_id" in df.columns:
         df.loc[~df["office_id"].isin(oficinas_ids), "office_id"] = np.nan
 
-    if "request_id" in df.columns:
-        sort_key = df["created_at"].fillna(pd.Timestamp.min)
+    if dedup and "request_id" in df.columns:
+        created_sort = pd.to_datetime(df["created_at"], errors="coerce").fillna(pd.Timestamp.min)
         completeness = df.notna().sum(axis=1)
-        df = df.assign(_sort_key=sort_key, _completeness=completeness)
+        df = df.assign(_sort_key=created_sort, _completeness=completeness)
         df = df.sort_values(["_sort_key", "_completeness"]).drop_duplicates(subset=["request_id"], keep="last")
         df = df.drop(columns=["_sort_key", "_completeness"])
 
@@ -260,19 +263,99 @@ def main() -> None:
     oficinas_raw = read_csv_bronze(bronze / "oficinas.csv")
 
     oficinas = clean_oficinas(oficinas_raw.copy())
-    solicitudes = clean_solicitudes(solicitudes_raw.copy(), set(oficinas["office_id"].dropna()))
+    oficinas_categorias = set(oficinas["categoria_principal"].dropna().astype(str).str.lower())
+    solicitudes = clean_solicitudes(solicitudes_raw.copy(), set(oficinas["office_id"].dropna()), dedup=False)
+
+    # Validation rules and quality log
+    total_records = int(len(solicitudes))
+    errors = {}
+
+    req_id = solicitudes.get("request_id")
+    errors["request_id_not_null"] = int(req_id.isna().sum())
+    errors["request_id_pattern"] = int((~req_id.fillna("").astype(str).str.match(REQUEST_ID_RE)).sum())
+
+    status = solicitudes.get("status")
+    errors["status_allowed"] = int((~status.isin(ALLOWED_STATUS)).sum())
+
+    channel = solicitudes.get("channel")
+    errors["channel_allowed"] = int((~channel.isin(ALLOWED_CHANNEL)).sum())
+
+    rating = pd.to_numeric(solicitudes.get("satisfaction_rating"), errors="coerce")
+    errors["satisfaction_rating_range"] = int((~rating.between(1, 5)).sum())
+
+    lat = pd.to_numeric(solicitudes.get("latitude"), errors="coerce")
+    lon = pd.to_numeric(solicitudes.get("longitude"), errors="coerce")
+    errors["latitude_range"] = int((~lat.between(-90, 90)).sum())
+    errors["longitude_range"] = int((~lon.between(-180, 180)).sum())
+
+    created_dt = pd.to_datetime(solicitudes.get("created_at"), errors="coerce")
+    closed_dt = pd.to_datetime(solicitudes.get("closed_at"), errors="coerce")
+    status_closed = status == "cerrado"
+    errors["closed_after_created"] = int((status_closed & closed_dt.notna() & created_dt.notna() & (closed_dt < created_dt)).sum())
+
+    diff_hours = (closed_dt - created_dt).dt.total_seconds() / 3600
+    res_hours = pd.to_numeric(solicitudes.get("resolution_hours"), errors="coerce")
+    errors["resolution_hours_coherent"] = int(((diff_hours.notna()) & res_hours.notna() & (abs(diff_hours - res_hours) > 1)).sum())
+
+    category = solicitudes.get("category").astype(str).str.lower()
+    errors["category_in_oficinas"] = int((~category.isin(oficinas_categorias)).sum())
+
+    errors["email_format"] = int((~solicitudes.get("contact_email").apply(is_valid_email)).sum())
+    phone_digits = solicitudes.get("contact_phone").apply(digits_only)
+    errors["phone_format"] = int((phone_digits.str.len() != 9).sum())
+
+    # Completeness rules
+    required_cols = ["request_id", "office_id", "created_at", "status", "category"]
+    missing_required = solicitudes[required_cols].isna().any(axis=1)
+    errors["required_fields"] = int(missing_required.sum())
+
+    # Uniqueness (before dedup)
+    errors["request_id_duplicates"] = int(req_id.duplicated().sum())
+
+    # Determine invalid rows
+    invalid_mask = (
+        req_id.isna()
+        | (~req_id.fillna("").astype(str).str.match(REQUEST_ID_RE))
+        | (~status.isin(ALLOWED_STATUS))
+        | (~channel.isin(ALLOWED_CHANNEL))
+        | (~rating.between(1, 5))
+        | (~lat.between(-90, 90))
+        | (~lon.between(-180, 180))
+        | (status_closed & closed_dt.notna() & created_dt.notna() & (closed_dt < created_dt))
+        | ((diff_hours.notna()) & res_hours.notna() & (abs(diff_hours - res_hours) > 1))
+        | (~category.isin(oficinas_categorias))
+        | (~solicitudes.get("contact_email").apply(is_valid_email))
+        | (phone_digits.str.len() != 9)
+        | missing_required
+    )
+
+    valid_records = int((~invalid_mask).sum())
+    discarded_records = int(invalid_mask.sum())
+
+    quality_log = {
+        "total_records": total_records,
+        "valid_records": valid_records,
+        "discarded_records": discarded_records,
+        "errors_by_rule": errors,
+    }
+
+    # Apply validity filter and dedup
+    solicitudes = solicitudes.loc[~invalid_mask].copy()
+    solicitudes = clean_solicitudes(solicitudes, set(oficinas["office_id"].dropna()), dedup=True)
 
     solicitudes.to_parquet(silver / "solicitudes_ciudadanas.parquet", index=False)
     oficinas.to_parquet(silver / "oficinas.parquet", index=False)
 
     report = build_quality_report(solicitudes_raw, oficinas_raw, solicitudes, oficinas)
     write_quality_report(report, silver)
+    (silver / "quality_log.json").write_text(json.dumps(quality_log, indent=2), encoding="utf-8")
 
     print("Silver generado:")
     print("-", silver / "solicitudes_ciudadanas.parquet")
     print("-", silver / "oficinas.parquet")
     print("-", silver / "quality_report.json")
     print("-", silver / "quality_report.md")
+    print("-", silver / "quality_log.json")
 
 
 if __name__ == "__main__":

@@ -66,6 +66,7 @@ def aggregate_metrics(df: pd.DataFrame, group_cols: list[str], is_lifetime: int)
     df["is_closed"] = (df["status"] == "cerrado").astype(int)
     df["is_open"] = (df["status"].isin(["abierto", "en_proceso"])).astype(int)
     df["sla_breach"] = (df["resolution_hours"] > SLA_HOURS).astype(int)
+    df["closed_within_sla"] = ((df["status"] == "cerrado") & (df["resolution_hours"] <= SLA_HOURS)).astype(int)
     df["high_satisfaction"] = (df["satisfaction_rating"] >= 4).astype(int)
     df["high_priority"] = df["priority"].isin(["alta", "critica"]).astype(int)
 
@@ -74,6 +75,7 @@ def aggregate_metrics(df: pd.DataFrame, group_cols: list[str], is_lifetime: int)
         closed_requests=("is_closed", "sum"),
         open_requests=("is_open", "sum"),
         sla_breach_count=("sla_breach", "sum"),
+        closed_within_sla_count=("closed_within_sla", "sum"),
         avg_resolution_hours=("resolution_hours", "mean"),
         median_resolution_hours=("resolution_hours", "median"),
         p90_resolution_hours=("resolution_hours", lambda s: s.quantile(0.9) if s.notna().any() else np.nan),
@@ -86,6 +88,7 @@ def aggregate_metrics(df: pd.DataFrame, group_cols: list[str], is_lifetime: int)
 
     agg["closure_rate"] = np.where(agg["total_requests"] > 0, agg["closed_requests"] / agg["total_requests"], np.nan)
     agg["sla_breach_rate"] = np.where(agg["total_requests"] > 0, agg["sla_breach_count"] / agg["total_requests"], np.nan)
+    agg["closed_within_sla_rate"] = np.where(agg["closed_requests"] > 0, agg["closed_within_sla_count"] / agg["closed_requests"], np.nan)
     agg["high_satisfaction_rate"] = np.where(agg["total_requests"] > 0, agg["high_satisfaction_count"] / agg["total_requests"], np.nan)
     agg["high_priority_rate"] = np.where(agg["total_requests"] > 0, agg["high_priority_count"] / agg["total_requests"], np.nan)
 

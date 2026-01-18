@@ -45,6 +45,17 @@ Transformar `solicitudes_ciudadanas.csv` y `oficinas.csv` desde Bronze a Silver 
 9) **Integridad referencial**:
    - `office_id` debe existir en `oficinas`.
    - Si no existe, setear `office_id` a nulo (o `OF-UNK` si se decide crear catálogo).
+10) **Reglas de validez y consistencia (para descartar registros inválidos)**:
+   - `request_id` no nulo y patrón `REQ-####`.
+   - `status` en {`abierto`, `en_proceso`, `cerrado`, `anulado`}.
+   - `channel` en {`web`, `presencial`, `callcenter`, `app`, `email`}.
+   - `satisfaction_rating` en [1,5].
+   - `latitude` en [-90, 90], `longitude` en [-180, 180].
+   - Si `status='cerrado'`, entonces `closed_at >= created_at`.
+   - `resolution_hours` coherente con diferencia de fechas (tolerancia 1h).
+   - `category` debe existir en `oficinas.categoria_principal`.
+   - Campos obligatorios: `request_id`, `office_id`, `created_at`, `status`, `category`.
+   - Formato: email válido y teléfono con 9 dígitos.
 
 ### Oficinas
 1) **Normalizar columnas**.
@@ -76,6 +87,10 @@ Transformar `solicitudes_ciudadanas.csv` y `oficinas.csv` desde Bronze a Silver 
   - Valores fuera de rango (p. ej. `satisfaction_rating` fuera de [1,5], lat/lon fuera de Perú).
   - Registros con fechas inconsistentes (`closed_at < created_at`).
 - Guardar el reporte como `data/silver/quality_report.json` y/o `data/silver/quality_report.md`.
+- Registrar log de calidad en `data/silver/quality_log.json` con:
+  - total de registros
+  - total válidos / descartados
+  - conteo de errores por regla
 
 ## Entregables
 - `data/silver/solicitudes_ciudadanas.parquet`.

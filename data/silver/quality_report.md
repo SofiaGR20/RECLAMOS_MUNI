@@ -2,7 +2,7 @@
 
 ## solicitudes
 - rows_raw: 522
-- rows_clean: 513
+- rows_clean: 20
 - duplicate_request_id_raw: 9
 - duplicate_request_id_clean: 0
 - invalid_date_order_raw: 15
@@ -12,8 +12,8 @@
 - invalid_phone_raw: 25
 - invalid_email_raw: 25
 - outliers_clean:
-  - resolution_hours: 9
-  - cost_soles: 5
+  - resolution_hours: 0
+  - cost_soles: 0
   - satisfaction_rating: 0
 
 ## oficinas
