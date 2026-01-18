@@ -89,6 +89,7 @@ if status:
     monthly = monthly[monthly["status"].isin(status)]
 
 if not monthly.empty:
+    monthly["year"] = monthly["year"].fillna(0).astype(int)
     yearly = (
         monthly.groupby("year", dropna=True)
         .agg(total=("total_requests", "sum"))
